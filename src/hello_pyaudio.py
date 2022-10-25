@@ -1,31 +1,26 @@
 import pyaudio
+import numpy as np
+import matplotlib.pyplot as plt
 
 CHUNK = 1024
 FORMAT = pyaudio.paInt16
 CHANNELS = 1
 RATE = 44100
-RECORD_SECONDS = 0.04
+SECONDS = 10
+
+def analyseAudio(data):
+    print(data)
 
 p = pyaudio.PyAudio()
+output = p.open(RATE,CHANNELS,FORMAT,output=True,frames_per_buffer=CHUNK)
+input = p.open(RATE,CHANNELS,FORMAT,input=True,frames_per_buffer=CHUNK)
 
-stream = p.open(format=FORMAT,
-                channels=CHANNELS,
-                rate=RATE,
-                input=True,
-                frames_per_buffer=CHUNK)
+for i in range(int(RATE / CHUNK * SECONDS)):
+    data = input.read(CHUNK)
+    numericData = np.frombuffer(data,dtype=np.int16)
+    analyseAudio(numericData)
+    #output.write(data)
 
-print("* recording")
-
-frames = []
-
-for i in range(0, int(RATE / CHUNK * RECORD_SECONDS)):
-    data = stream.read(CHUNK)
-    frames.append(data)
-
-print("* done recording")
-
-stream.stop_stream()
-stream.close()
+input.stop_stream()
+input.close()
 p.terminate()
-
-print(frames)
